@@ -1,0 +1,38 @@
+/* CSS declarations go here */
+*{
+	align-content: center;
+	align-items: center;
+	text-align: center;
+	font-size: 16px;
+}
+
+.leftCol{
+	align-content: right;
+	align-items: right;
+	text-align: right;
+	padding-right: 0rem;
+}
+
+.rightCol{
+	align-content: left;
+	align-items: left;
+	text-align: left;
+	padding-left: 0.5rem;
+}
+
+#every{
+	max-width: 10rem !important;
+}
+
+#APY{
+	max-width: 16rem !important;
+}
+
+#percent{
+	margin-left: 0.5rem;
+	font-weight: bolder;
+}
+
+.btn-success{
+	margin: 1rem;
+}

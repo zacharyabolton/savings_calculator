@@ -1,0 +1,94 @@
+<template name="calculator">
+	<div class="container well">
+		<div class="row">
+			<form class="col-xs-12">
+				<div class="col-xs-8 col-xs-offset-2">
+					<h2>Savings Calculator</h2>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="principle">Principle: $</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input type="number" name="principle" step="any" required>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="amount">Save: $</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input type="number" name="amount" step="any" required>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="every">Every</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input id="every" type="number" name="every" required>
+					
+						<select name="period">
+							<option value="86400000">Day(s)</option>
+							<option value="604800000">Week(s)</option>
+							<option value="31556952000">Year(s)</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="until">Until</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input type="text" id="my-datepicker" name="until" required>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="APY">APY</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input id="APY" type="number" name="APY" step="any" required><span id="percent">%</span>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="increment">Increment: $</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input type="number" name="increment" step="any" required>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="incrementEvery">Every</label>
+					</div>
+					<div class="rightCol col-xs-8 col-md-7">
+						<input id="every" type="number" name="incrementEvery" step="any" required>
+					
+						<select name="incrementPeriod">
+							<option value="604800000">Week(s)</option>
+							<option value="31556952000">Year(s)</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="col-xs-10 col-xs-offset-1">
+					<input class="btn btn-success" type="submit" name="calculate">
+				</div>
+			</form>
+
+			<div class="col-xs-10 col-xs-offset-1">
+				<h4>{{final}}</h4>
+			</div>
+		</div>
+	</div>
+
+</template>
