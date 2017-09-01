@@ -4,82 +4,127 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import './calculator.html';
 
-let calculator = function(principle, amount, every, period, until, APY, increment, incrementEvery, incrementPeriod){
-	var result, now, rate;
+let calculator = function(principle, amountToSave, saveEvery, savePeriod, until, APY, compoundingPeriods, increment, incrementEvery, incrementPeriod){
+
+	savePeriod = savePeriod*saveEvery;
+	incrementPeriod = incrementPeriod*incrementEvery;
+	//until = until+86400000;//might not be needed after renovation!
+	
+	var result, now, rate, startMonth;
 	result = principle;
 	now = Number(new Date());
-	period = period*every;
-	until = until+86400000;
-	rate = nominalInterestRate(APY);
-	incrementPeriod = incrementPeriod*incrementEvery;
+	startMonth = new Date().getMonth();
 
 	for (var day = now; day <= until; day+=86400000) {
 		
-		result 	= interestEarned(rate, result)
-						+	save(amount, period, day, now, increment, incrementEvery, incrementPeriod);
+		startOfYear = new Date(new Date(day).getFullYear()+"/01/01");
+		endOfYear = new Date(new Date(startOfYear).getFullYear()+"/12/32");
+		startOfYear = Number(startOfYear);
+		endOfYear = Number(endOfYear);
+		lengthOfYear = endOfYear-startOfYear;
 
-		if(regularIncrement(incrementPeriod, day, now)){
+		if(compoundingPeriods === 365 || compoundingPeriods === 366){//daily compounding
 
-			amount += increment;
+			compoundingPeriods = lengthOfYear/86400000;
 
-		};
+			result = totalAfterInterest(APY, compoundingPeriods, result);
+
+		}else if(compoundingPeriods===12){//monthly compounding
+
+			var startMonth;
+
+			
+			currentMonth = new Date(day).getMonth();
+			if(startMonth !== currentMonth){
+				startMonth = currentMonth
+				result = totalAfterInterest(APY, compoundingPeriods, result);
+			}
+
+		}else if(compoundingPeriods===4){//quarterly compounding
+
+			console.log("quarterly");
+			console.log(compoundingPeriods);
+
+
+		}else if(compoundingPeriods===1){//yearly compounding
+
+			console.log("yearly");
+			console.log(compoundingPeriods);
+
+		}else{
+			alert("error");//should never happen
+		}
+
 	};
 
-	return "$"+result.toFixed(2);
+	return result;
+
+	// for (var day = now; day <= until; day+=86400000) {
+		
+	// 	result 	= totalAfterInterest(APY, compoundingPeriods, result)
+	// 					+	save(amountToSave, savePeriod, day, now, increment, incrementEvery, incrementPeriod);
+
+	// 	if(regularIncrement(incrementPeriod, day, now)){
+
+	// 		amountToSave += increment;
+
+	// 	};
+	// };
+
+	// return "$"+result.toFixed(2);
 
 };
 
-let nominalInterestRate = function(APY){
-	var A, P, r;
-	P = 100;
-	A = P+APY;
-	r = 365*(Math.pow((A/P), (1/365))-1);
+let totalAfterInterest = function(APY, compoundingPeriods, result){
 
-	return r;
-};
+	var r, totalAfterInterest;
 
-let interestEarned = function(nominalInterestRate, principle){
-	var A = principle*(1+(nominalInterestRate/365));
+	r = (   (Math.pow( ((APY/100)+1), (1/compoundingPeriods) ))   -1)*compoundingPeriods;
 
-	return A;
-};
-
-let save = function(amount, period, day, now){
-	var elapsedTime, tracker;
-	elapsedTime = day-now;
-
-	if(elapsedTime > 0){
-		var timeToSave = (elapsedTime % period) === 0;
-
-		if(timeToSave){
-
-			return amount;
-		}else{
-			return 0;
-		}
-
-	}else{
-		return 0;
-	}
-};
-
-let regularIncrement = function(incrementPeriod, day, now){
-	var elapsedTime = day-now;
-
-	if(elapsedTime > 0){
-		var timeToIncrement = (elapsedTime % incrementPeriod) === 0;
-
-		if(timeToIncrement){
-			console.log("fired");
-			return true;
-		}
-
-		return false;
-	}else{
-		return false;
-	}
+	totalAfterInterest = result*(1+(r/compoundingPeriods));
+	
+	return totalAfterInterest;
 
 };
+
+
+
+// let save = function(amountToSave, savePeriod, day, now){
+// 	var elapsedTime, tracker;
+// 	elapsedTime = day-now;
+
+// 	if(elapsedTime > 0){
+// 		var timeToSave = (elapsedTime % savePeriod) === 0;
+
+// 		if(timeToSave){
+
+// 			return amountToSave;
+// 		}else{
+// 			return 0;
+// 		}
+
+// 	}else{
+// 		return 0;
+// 	}
+// };
+
+// let regularIncrement = function(incrementPeriod, day, now){
+// 	var elapsedTime = day-now;
+
+// 	if(elapsedTime > 0){
+// 		var timeToIncrement = (elapsedTime % incrementPeriod) === 0;
+
+// 		if(timeToIncrement){
+// 			console.log("fired");
+// 			return true;
+// 		}
+
+// 		return false;
+// 	}else{
+// 		return false;
+// 	}
+
+// };
 
 Template.calculator.rendered=function() {
 	$('#my-datepicker').datepicker({
@@ -104,22 +149,22 @@ Template.calculator.events({
 
 		event.preventDefault();
 
-		var principle, amount, every, period, until, APY, increment, incrementEvery, incrementPeriod;
+		var principle, amountToSave, saveEvery, savePeriod, until, APY, increment, incrementEvery, incrementPeriod;
 		principle = Number(template.find( '[name="principle"]' ).value);
-		amount = Number(template.find( '[name="amount"]' ).value);
-		every = Number(template.find( '[name="every"]' ).value);
-		period = Number(template.find( '[name="period"]' ).value);
+		amountToSave = Number(template.find( '[name="amountToSave"]' ).value);
+		saveEvery = Number(template.find( '[name="saveEvery"]' ).value);
+		savePeriod = template.find( '[name="savePeriod"]' ).value;
 		until = Number(new Date(template.find( '[name="until"]' ).value));
 		APY = Number(template.find( '[name="APY"]' ).value);
+		compoundingPeriods = Number(template.find( '[name="compoundingPeriods"]' ).value);
 		increment = Number(template.find( '[name="increment"]' ).value);
 		incrementEvery = Number(template.find( '[name="incrementEvery"]' ).value);
-		incrementPeriod = Number(template.find( '[name="incrementPeriod"]' ).value);
+		incrementPeriod = template.find( '[name="incrementPeriod"]' ).value;
 
-		var result = 	calculator(principle, amount, every, period, until, APY, increment, incrementEvery, incrementPeriod)
+		var result = 	calculator(principle, amountToSave, saveEvery, savePeriod, until, APY, compoundingPeriods, increment, incrementEvery, incrementPeriod)
 									+" by "
 									+moment(until).format('MMMM Do, YYYY');
 
 		Template.instance().final.set(result);
-
 	}
 });
