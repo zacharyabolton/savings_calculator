@@ -4,127 +4,175 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import './calculator.html';
 
-let calculator = function(principle, amountToSave, saveEvery, savePeriod, until, APY, compoundingPeriods, increment, incrementEvery, incrementPeriod){
-
-	savePeriod = savePeriod*saveEvery;
-	incrementPeriod = incrementPeriod*incrementEvery;
-	//until = until+86400000;//might not be needed after renovation!
+let calculator = function(principle, amountToSave, saveEvery, savePeriod, until, APY, compoundingPeriods, amountToIncrement, incrementEvery, incrementPeriod){
 	
-	var result, now, rate, startMonth;
+	var result, d, dn, startYearMonth, startMonthDay, halfYear, startQuarter, monthsTranspiredForSave, yearsTranspiredForSave, monthsTranspiredForInc, yearsTranspiredForInc;
 	result = principle;
-	now = Number(new Date());
-	startMonth = new Date().getMonth();
+	d = new Date();
+	dn = Number(d);
+	startYearMonth = d.getFullYear()+"/"+d.getMonth();
+	if(d.getMonth()+"/"+d.getDate() === "1/29"){//start MM/DD (28th for leap day)
+		startMonthDay = "1/28";
+	}else{
+		startMonthDay = d.getMonth()+"/"+d.getDate();
+	};///////////////////////////////////////////////////////////////////////////
+	halfYear = new Date(d.setMonth(d.getMonth()+6)).getMonth()+"/"+d.getDate();
 
-	for (var day = now; day <= until; day+=86400000) {
+	var quarter = function(day){
+		var currentMonth = new Date(day).getMonth();
+		var currentYear = new Date(day).getFullYear();
+		if(currentMonth < 3){
+			return "1st quarter "+currentYear;
+		}else if(currentMonth < 6){
+			return "2nd quarter "+currentYear;
+		}else if(currentMonth < 9){
+			return "3rd quarter "+currentYear;
+		}else{
+			return "4th quarter "+currentYear;
+		};
+	};
+
+	startQuarter = quarter(dn);
+	monthsTranspiredForSave = 0;
+	yearsTranspiredForSave = 0;
+	monthsTranspiredForInc = 0;
+	yearsTranspiredForInc = 0;
+
+	for (var day = dn+86400000; day <= until+86400000; day+=86400000) {
 		
+		var startOfYear, endOfYear, lengthOfYear, elapsedTime, monthlySaveDate, yearlySaveDate;
+
 		startOfYear = new Date(new Date(day).getFullYear()+"/01/01");
 		endOfYear = new Date(new Date(startOfYear).getFullYear()+"/12/32");
 		startOfYear = Number(startOfYear);
 		endOfYear = Number(endOfYear);
 		lengthOfYear = endOfYear-startOfYear;
-
-		if(compoundingPeriods === 365 || compoundingPeriods === 366){//daily compounding
-
-			compoundingPeriods = lengthOfYear/86400000;
-
-			result = totalAfterInterest(APY, compoundingPeriods, result);
-
-		}else if(compoundingPeriods===12){//monthly compounding
-
-			var startMonth;
-
-			
-			currentMonth = new Date(day).getMonth();
-			if(startMonth !== currentMonth){
-				startMonth = currentMonth
-				result = totalAfterInterest(APY, compoundingPeriods, result);
-			}
-
-		}else if(compoundingPeriods===4){//quarterly compounding
-
-			console.log("quarterly");
-			console.log(compoundingPeriods);
-
-
-		}else if(compoundingPeriods===1){//yearly compounding
-
-			console.log("yearly");
-			console.log(compoundingPeriods);
-
+		elapsedTime = day-dn;
+		if(d.getDate() > 28){
+			monthlySaveDate = 28;
 		}else{
-			alert("error");//should never happen
+			monthlySaveDate = d.getDate();
+		};
+		if((d.getMonth()+"/"+d.getDate()) === "1/29"){
+			yearlySaveDate = "1/28";
+		}else{
+			yearlySaveDate = d.getMonth()+"/"+d.getDate();
 		}
 
+		if(compoundingPeriods === 365 || compoundingPeriods === 366){//daily compounding
+			//////////////////////////////////////////////////////////////////////////////
+			compoundingPeriods = lengthOfYear/86400000;
+			result = totalAfterInterest(APY, compoundingPeriods, result);
+			//////////////////////////////////////////////////////////////////////////////
+		}else if(compoundingPeriods===12){///////////////////////////monthly compounding
+			//////////////////////////////////////////////////////////////////////////////
+			var currentYearMonth = new Date(day).getFullYear()+"/"+new Date(day).getMonth();
+			if(startYearMonth !== currentYearMonth){
+				result = totalAfterInterest(APY, compoundingPeriods, result);
+				startYearMonth = currentYearMonth;
+			}
+			//////////////////////////////////////////////////////////////////////////////
+		}else if(compoundingPeriods===4){//////////////////////////quarterly compounding
+			//////////////////////////////////////////////////////////////////////////////
+			var currentQuarter = quarter(day);
+			if(startQuarter !== currentQuarter){
+
+				startQuarter = quarter(day);
+				result = totalAfterInterest(APY, compoundingPeriods, result);
+			}
+			//////////////////////////////////////////////////////////////////////////////
+		}else if(compoundingPeriods===2){////////////////////////semiannualy compounding
+			//////////////////////////////////////////////////////////////////////////////
+			var currentMonthDay = new Date(day).getMonth()+"/"+new Date(day).getDate();
+			if(currentMonthDay === startMonthDay){
+				result = totalAfterInterest(APY, compoundingPeriods, result);
+			}else if(currentMonthDay === halfYear){
+				result = totalAfterInterest(APY, compoundingPeriods, result);
+			}
+			//////////////////////////////////////////////////////////////////////////////
+		}else if(compoundingPeriods===1){/////////////////////////////yearly compounding
+			//////////////////////////////////////////////////////////////////////////////
+			var currentMonthDay = new Date(day).getMonth()+"/"+new Date(day).getDate();
+			if(currentMonthDay === startMonthDay){
+				result = totalAfterInterest(APY, compoundingPeriods, result);
+			}
+			//////////////////////////////////////////////////////////////////////////////
+		};
+
+		if(savePeriod === "day"){
+			if(elapsedTime % (86400000*saveEvery) === 0){
+				result += amountToSave;
+			}
+		}else if(savePeriod === "week"){
+			if(elapsedTime % (86400000*7*saveEvery) === 0){
+				result += amountToSave;
+			}
+		}else if(savePeriod === "month"){
+			var todaysDate = new Date(day).getDate();
+			if((d.getFullYear()+"/"+d.getMonth()) !== (new Date(day).getMonth()+"/"+new Date(day).getMonth())){
+				if(todaysDate === monthlySaveDate){
+					monthsTranspiredForSave++;
+					if(monthsTranspiredForSave % saveEvery === 0){
+						result += amountToSave;
+					}
+				}
+			}
+		}else if(savePeriod === "year"){
+			var todaysDate = new Date(day).getMonth()+"/"+new Date(day).getDate();
+			if(todaysDate === yearlySaveDate){
+				yearsTranspiredForSave++;
+				if(yearsTranspiredForSave % saveEvery === 0){
+					result += amountToSave;
+				}
+			}
+		};
+
+		if(incrementPeriod === "day"){
+			if(elapsedTime % (86400000*incrementEvery) === 0){
+				amountToSave += amountToIncrement;
+			}
+		}else if(incrementPeriod === "week"){
+			if(elapsedTime % (86400000*7*incrementEvery) === 0){
+				amountToSave += amountToIncrement;
+			}
+		}else if(incrementPeriod === "month"){
+			var todaysDate = new Date(day).getDate();
+			if((d.getFullYear()+"/"+d.getMonth()) !== (new Date(day).getMonth()+"/"+new Date(day).getMonth())){
+				if(todaysDate === monthlySaveDate){
+					monthsTranspiredForInc++;
+					if(monthsTranspiredForInc % incrementEvery === 0){
+						amountToSave += amountToIncrement;
+					}
+				}
+			}
+		}else if(incrementPeriod === "year"){
+			var todaysDate = new Date(day).getMonth()+"/"+new Date(day).getDate();
+			if(todaysDate === yearlySaveDate){
+				yearsTranspiredForInc++;
+				if(yearsTranspiredForInc % incrementEvery === 0){
+					amountToSave += amountToIncrement;
+				}
+			}
+		};
 	};
 
-	return result;
+	monthsTranspiredForSave = 0;
+	yearsTranspiredForSave = 0;
+	monthsTranspiredForInc = 0;
+	yearsTranspiredForInc = 0;
 
-	// for (var day = now; day <= until; day+=86400000) {
-		
-	// 	result 	= totalAfterInterest(APY, compoundingPeriods, result)
-	// 					+	save(amountToSave, savePeriod, day, now, increment, incrementEvery, incrementPeriod);
+	return numberWithCommas(result);
 
-	// 	if(regularIncrement(incrementPeriod, day, now)){
+};
 
-	// 		amountToSave += increment;
-
-	// 	};
-	// };
-
-	// return "$"+result.toFixed(2);
-
+let numberWithCommas = function(x){
+	x = x.toFixed(2);
+	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 let totalAfterInterest = function(APY, compoundingPeriods, result){
-
-	var r, totalAfterInterest;
-
-	r = (   (Math.pow( ((APY/100)+1), (1/compoundingPeriods) ))   -1)*compoundingPeriods;
-
-	totalAfterInterest = result*(1+(r/compoundingPeriods));
-	
-	return totalAfterInterest;
-
+	return result*(1+((APY/100)/compoundingPeriods));
 };
-
-
-
-// let save = function(amountToSave, savePeriod, day, now){
-// 	var elapsedTime, tracker;
-// 	elapsedTime = day-now;
-
-// 	if(elapsedTime > 0){
-// 		var timeToSave = (elapsedTime % savePeriod) === 0;
-
-// 		if(timeToSave){
-
-// 			return amountToSave;
-// 		}else{
-// 			return 0;
-// 		}
-
-// 	}else{
-// 		return 0;
-// 	}
-// };
-
-// let regularIncrement = function(incrementPeriod, day, now){
-// 	var elapsedTime = day-now;
-
-// 	if(elapsedTime > 0){
-// 		var timeToIncrement = (elapsedTime % incrementPeriod) === 0;
-
-// 		if(timeToIncrement){
-// 			console.log("fired");
-// 			return true;
-// 		}
-
-// 		return false;
-// 	}else{
-// 		return false;
-// 	}
-
-// };
 
 Template.calculator.rendered=function() {
 	$('#my-datepicker').datepicker({
@@ -149,7 +197,7 @@ Template.calculator.events({
 
 		event.preventDefault();
 
-		var principle, amountToSave, saveEvery, savePeriod, until, APY, increment, incrementEvery, incrementPeriod;
+		var principle, amountToSave, saveEvery, savePeriod, until, APY, amountToIncrement, incrementEvery, incrementPeriod;
 		principle = Number(template.find( '[name="principle"]' ).value);
 		amountToSave = Number(template.find( '[name="amountToSave"]' ).value);
 		saveEvery = Number(template.find( '[name="saveEvery"]' ).value);
@@ -157,11 +205,12 @@ Template.calculator.events({
 		until = Number(new Date(template.find( '[name="until"]' ).value));
 		APY = Number(template.find( '[name="APY"]' ).value);
 		compoundingPeriods = Number(template.find( '[name="compoundingPeriods"]' ).value);
-		increment = Number(template.find( '[name="increment"]' ).value);
+		amountToIncrement = Number(template.find( '[name="amountToIncrement"]' ).value);
 		incrementEvery = Number(template.find( '[name="incrementEvery"]' ).value);
 		incrementPeriod = template.find( '[name="incrementPeriod"]' ).value;
 
-		var result = 	calculator(principle, amountToSave, saveEvery, savePeriod, until, APY, compoundingPeriods, increment, incrementEvery, incrementPeriod)
+		var result = 	"$"
+									+calculator(principle, amountToSave, saveEvery, savePeriod, until, APY, compoundingPeriods, amountToIncrement, incrementEvery, incrementPeriod)
 									+" by "
 									+moment(until).format('MMMM Do, YYYY');
 

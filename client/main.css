@@ -11,6 +11,7 @@
 	align-items: right;
 	text-align: right;
 	padding-right: 0rem;
+	padding-left: 0rem;
 }
 
 .rightCol{
@@ -24,13 +25,28 @@
 	max-width: 10rem !important;
 }
 
+#saveSelect{
+	max-width: 8.25rem !important;
+	min-width: 8.25rem !important;
+}
+
 #APY{
 	max-width: 16rem !important;
+}
+
+#compoundingSelect{
+	max-width: 18.67rem !important;
+	min-width: 18.67rem !important;
 }
 
 #percent{
 	margin-left: 0.5rem;
 	font-weight: bolder;
+}
+
+#incrementSelect{
+	max-width: 8.25rem !important;
+	min-width: 8.25rem !important;
 }
 
 .btn-success{

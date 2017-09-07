@@ -31,10 +31,10 @@
 					<div class="rightCol col-xs-8 col-md-7">
 						<input id="every" type="number" name="saveEvery" required>
 					
-						<select name="savePeriod">
+						<select id="saveSelect" name="savePeriod">
 							<option value="day">Day(s)</option>
-							<option value="month">Month(s)</option>
 							<option value="week">Week(s)</option>
+							<option value="month">Month(s)</option>
 							<option value="year">Year(s)</option>
 						</select>
 					</div>
@@ -59,15 +59,15 @@
 				</div>
 
 				<div class="col-xs-10 col-xs-offset-1">
-					<div class="leftCol col-xs-8 col-md-7">
-						<label for="compoundingPeriods">Compounding Periods/Year</label>
+					<div class="leftCol col-xs-4 col-md-5">
+						<label for="compoundingPeriods">Compounding</label>
 					</div>
-					<div class="rightCol col-xs-4 col-md-5">
-						<!-- <input id="compoundingPeriods" type="number" name="compoundingPeriods" step="any" required> -->
-						<select name="compoundingPeriods">
+					<div class="rightCol col-xs-8 col-md-7">
+						<select id="compoundingSelect" name="compoundingPeriods">
 							<option value="365">Daily</option>
 							<option value="12">Monthly</option>
 							<option value="4">Quarterly</option>
+							<option value="2">Semiannualy</option>
 							<option value="1">Yearly</option>
 						</select>
 					</div>
@@ -78,7 +78,7 @@
 						<label for="increment">Increment: $</label>
 					</div>
 					<div class="rightCol col-xs-8 col-md-7">
-						<input type="number" name="increment" step="any" required>
+						<input type="number" name="amountToIncrement" step="any" required>
 					</div>
 				</div>
 
@@ -89,10 +89,10 @@
 					<div class="rightCol col-xs-8 col-md-7">
 						<input id="every" type="number" name="incrementEvery" step="any" required>
 					
-						<select name="incrementPeriod">
+						<select id="incrementSelect" name="incrementPeriod">
 							<option value="day">Day(s)</option>
-							<option value="month">Month(s)</option>
 							<option value="week">Week(s)</option>
+							<option value="month">Month(s)</option>
 							<option value="year">Year(s)</option>
 						</select>
 					</div>
